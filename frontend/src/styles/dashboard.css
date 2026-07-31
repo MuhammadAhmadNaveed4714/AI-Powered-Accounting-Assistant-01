@@ -1,0 +1,460 @@
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f4f6f9;
+}
+
+.page-container {
+    padding: 20px;
+}
+
+.cards{
+    display:flex;
+    gap:25px;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin:30px 0;
+}
+
+.card{
+
+    width:280px;
+
+    border-radius:18px;
+
+    padding:28px;
+
+    color:white;
+
+    transition:.35s;
+
+    cursor:pointer;
+
+    box-shadow:0 12px 25px rgba(0,0,0,.18);
+
+    position:relative;
+
+    overflow:hidden;
+
+}
+
+.card::before{
+
+    content:"";
+
+    position:absolute;
+
+    width:180px;
+
+    height:180px;
+
+    background:rgba(255,255,255,.15);
+
+    border-radius:50%;
+
+    top:-60px;
+
+    right:-60px;
+
+}
+
+.card:hover{
+
+    transform:translateY(-12px) scale(1.03);
+
+    box-shadow:0 20px 35px rgba(0,0,0,.25);
+
+}
+
+.card h2{
+
+    margin-bottom:18px;
+
+    font-size:22px;
+
+}
+
+.card h3{
+
+    font-size:34px;
+
+    margin:0;
+
+}
+
+.chart-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.info-box {
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 900px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+
+.insight {
+    background: #f1fff1;
+    border: 1px solid #4CAF50;
+}
+
+.recommendation {
+    background: #F3F9FF;
+    border: 1px solid #2196F3;
+}
+
+.center-heading {
+    text-align: center;
+}
+
+.chart-title {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.chart-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.info-text {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.insight-text {
+    color: #2E7D32;
+}
+
+.recommendation-text {
+    color: #1565C0;
+}
+
+.chart-container {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+    margin: 20px 0;
+    overflow-x: auto;
+}
+
+.chart-title {
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    color: #1976d2;
+}
+
+.info-box {
+    background: white;
+    padding: 20px;
+    border-left: 5px solid #1976d2;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+}
+
+.info-text {
+    margin: 0;
+    line-height: 1.7;
+    font-size: 16px;
+}
+
+/* =========================
+   Dashboard Loading Spinner
+========================= */
+
+.loading-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background: #f4f7fb;
+}
+
+.loading-spinner {
+    width: 70px;
+    height: 70px;
+    border: 8px solid #d6e4ff;
+    border-top: 8px solid #1976D2;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loading-text {
+    margin-top: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #1976D2;
+}
+
+@keyframes spin {
+
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+
+}
+
+/* =========================
+   Responsive Dashboard
+========================= */
+
+@media (max-width: 992px) {
+
+    .cards {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .card {
+        width: 95%;
+        max-width: 500px;
+    }
+
+    .chart-container {
+        padding: 10px;
+    }
+
+    .info-box {
+        margin: 15px 10px;
+    }
+
+}
+
+@media (max-width: 768px) {
+
+    .page-container {
+        padding: 10px;
+    }
+
+    .chart-title {
+        font-size: 22px;
+    }
+
+    .info-text {
+        font-size: 15px;
+    }
+
+}
+
+@media (max-width: 576px) {
+
+    .card h2 {
+        font-size: 20px;
+    }
+
+    .card h3 {
+        font-size: 28px;
+    }
+
+    .loading-text {
+        font-size: 18px;
+    }
+
+}
+
+/* =========================
+   Dashboard Cards
+========================= */
+
+.card {
+    width: 280px;
+    padding: 25px;
+    border-radius: 15px;
+    color: white;
+    text-align: center;
+    transition: 0.3s ease;
+}
+
+
+.card:hover {
+
+    transform: translateY(-10px);
+
+    box-shadow:
+    0 15px 30px rgba(0,0,0,0.2);
+
+}
+
+
+.income-card {
+
+    background:
+    linear-gradient(135deg,#43A047,#66BB6A);
+
+}
+
+
+.expense-card {
+
+    background:
+    linear-gradient(135deg,#E53935,#EF5350);
+
+}
+
+
+.balance-card {
+
+    background:
+    linear-gradient(135deg,#1E88E5,#42A5F5);
+
+}
+
+
+
+.card-icon {
+
+    font-size: 45px;
+
+    margin-bottom: 10px;
+
+}
+
+
+.card h2 {
+
+    font-size: 22px;
+
+}
+
+
+.card h3 {
+
+    font-size: 26px;
+
+}
+
+/* =========================
+   Responsive Dashboard
+========================= */
+
+@media (max-width: 768px) {
+
+
+    .page-container {
+
+        padding: 10px;
+
+    }
+
+
+    .cards {
+
+        flex-direction: column;
+
+        align-items: center;
+
+    }
+
+
+    .card {
+
+        width: 90%;
+
+        max-width: 350px;
+
+    }
+
+
+    .chart-container {
+
+        width: 100%;
+
+        overflow-x: auto;
+
+    }
+
+
+    .center-heading {
+
+        font-size: 24px;
+
+    }
+
+
+    button {
+
+        width: 100%;
+
+    }
+
+
+}
+
+
+/* Tablet View */
+
+@media (max-width: 1024px) {
+
+
+    .cards {
+
+        justify-content: center;
+
+    }
+
+
+    .card {
+
+        width: 250px;
+
+    }
+
+
+}
+
+/* =========================
+   Dark Mode
+========================= */
+
+.page-container.dark {
+
+    background-color: #121212;
+
+    color: white;
+
+}
+
+
+.page-container.dark .card {
+
+    color: white;
+
+}
+
+
+.page-container.dark .chart-container {
+
+    background-color: #1e1e1e;
+
+}
+
+
+.page-container.dark .info-box {
+
+    background-color: #1e1e1e;
+
+    color: white;
+
+}
+
+
+.page-container.dark h1,
+.page-container.dark h2,
+.page-container.dark h3 {
+
+    color: white;
+
+}

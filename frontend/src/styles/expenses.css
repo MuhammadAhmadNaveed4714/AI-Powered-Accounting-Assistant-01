@@ -1,0 +1,10 @@
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+.table-responsive table {
+    min-width: 900px;
+    border-collapse: collapse;
+}

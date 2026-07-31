@@ -1,0 +1,188 @@
+/* =========================
+   Income Page
+========================= */
+
+.income-page {
+    padding: 25px;
+    min-height: 100vh;
+    background: #f4f6f9;
+}
+
+.income-title {
+    text-align: center;
+    color: #1976D2;
+    margin-bottom: 25px;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+/* =========================
+   Income Form
+========================= */
+
+.income-form {
+    background: #ffffff;
+    max-width: 800px;
+    margin: auto;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.income-form input,
+.income-form select,
+.income-form textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: .3s;
+    box-sizing: border-box;
+}
+
+.income-form input:focus,
+.income-form select:focus,
+.income-form textarea:focus {
+    outline: none;
+    border-color: #1976D2;
+    box-shadow: 0 0 8px rgba(25,118,210,.25);
+}
+
+/* =========================
+   Buttons
+========================= */
+
+.save-btn {
+    background: #1976D2;
+    color: white;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    transition: .3s;
+}
+
+.save-btn:hover {
+    background: #1565C0;
+}
+
+.edit-btn {
+    background: #ff9800;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-right: 8px;
+    transition: .3s;
+}
+
+.edit-btn:hover {
+    background: #f57c00;
+}
+
+.delete-btn {
+    background: #e53935;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: .3s;
+}
+
+.delete-btn:hover {
+    background: #c62828;
+}
+
+/* =========================
+   Table
+========================= */
+
+.income-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    margin-top: 30px;
+    box-shadow: 0 6px 15px rgba(0,0,0,.08);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.income-table th {
+    background: #1976D2;
+    color: white;
+    padding: 14px;
+    text-align: left;
+}
+
+.income-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.income-table tr:hover {
+    background: #f7fbff;
+}
+
+/* =========================
+   Search Box
+========================= */
+
+.search-box {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.search-box button {
+    background: #1976D2;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.search-box button:hover {
+    background: #1565C0;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media (max-width:768px) {
+
+    .income-form {
+        padding: 18px;
+    }
+
+    .income-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .search-box {
+        flex-direction: column;
+    }
+
+    .save-btn,
+    .edit-btn,
+    .delete-btn {
+        width: 100%;
+        margin-top: 8px;
+    }
+}
