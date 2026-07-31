@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from routes.ai import ai_bp
@@ -9,24 +9,21 @@ from routes.income import income_bp
 from routes.dashboard import dashboard_bp
 from routes.admin import admin_bp
 from routes.ai_report import ai_report_bp
+import os
+
 app = Flask(__name__)
 
-
-# Allow React frontend connection
 CORS(app)
 
-
-# JWT Configuration
-app.config["JWT_SECRET_KEY"] = "my-secret-key"
+app.config["JWT_SECRET_KEY"] = os.getenv(
+    "JWT_SECRET_KEY",
+    "my-secret-key"
+)
 
 jwt = JWTManager(app)
 
-
-# Create database tables
 create_tables()
 
-
-# Register Routes
 app.register_blueprint(auth_bp)
 app.register_blueprint(expense_bp)
 app.register_blueprint(income_bp)
@@ -34,15 +31,23 @@ app.register_blueprint(dashboard_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(ai_bp)
 app.register_blueprint(ai_report_bp)
-@app.route("/")
-def home():
 
-    return {
-        "message": "Backend is running successfully!"
-    }
+FRONTEND_FOLDER = os.path.join(app.root_path, "frontend_build")
 
+
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve(path):
+    requested = os.path.join(FRONTEND_FOLDER, path)
+
+    if path and os.path.exists(requested):
+        return send_from_directory(FRONTEND_FOLDER, path)
+
+    return send_from_directory(FRONTEND_FOLDER, "index.html")
 
 
 if __name__ == "__main__":
-
-    app.run(debug=True)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 8080))
+    )
