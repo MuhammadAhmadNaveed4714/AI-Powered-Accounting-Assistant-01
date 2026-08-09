@@ -1,7 +1,6 @@
 import sqlite3
 import os
 from datetime import datetime, timedelta
-
 DATABASE_NAME = "database/accounting.db"
 
 
@@ -17,20 +16,30 @@ def create_tables():
     connection = get_connection()
     cursor = connection.cursor()
 
+    # =========================
     # Users Table
+    # =========================
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
 
         user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+
         username TEXT NOT NULL,
+
         email TEXT NOT NULL UNIQUE,
+
         password TEXT NOT NULL,
+
         role TEXT NOT NULL DEFAULT 'user'
 
     )
     """)
 
+    # =========================
     # Expenses Table
+    # =========================
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS expenses (
 
@@ -48,12 +57,16 @@ def create_tables():
 
         notes TEXT,
 
-        FOREIGN KEY (user_id) REFERENCES users(user_id)
+        FOREIGN KEY(user_id)
+            REFERENCES users(user_id)
 
     )
     """)
 
+    # =========================
     # Income Table
+    # =========================
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS income (
 
@@ -69,15 +82,123 @@ def create_tables():
 
         notes TEXT,
 
-        FOREIGN KEY (user_id) REFERENCES users(user_id)
+        FOREIGN KEY(user_id)
+            REFERENCES users(user_id)
+
+    )
+    """)
+
+    # =========================
+    # Documents Table
+    # =========================
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS documents (
+
+        document_id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        user_id INTEGER NOT NULL,
+
+        document_type TEXT NOT NULL,
+
+        file_name TEXT NOT NULL,
+
+        file_path TEXT NOT NULL,
+
+        upload_date TEXT NOT NULL,
+
+        ocr_text TEXT,
+
+        cleaned_text TEXT,
+
+        ai_result TEXT,
+
+        FOREIGN KEY(user_id)
+            REFERENCES users(user_id)
+
+    )
+    """)
+
+    # =========================
+    # Bills Table
+    # =========================
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS bills (
+
+        bill_id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        user_id INTEGER NOT NULL,
+
+        document_id INTEGER NOT NULL,
+
+        name TEXT,
+
+        issue_date TEXT,
+
+        bill_month TEXT,
+
+        due_date TEXT,
+
+        reference_no TEXT,
+
+        payable_within_due_date REAL,
+
+        payable_after_due_date REAL,
+
+        created_at TEXT,
+
+        FOREIGN KEY(user_id)
+            REFERENCES users(user_id),
+
+        FOREIGN KEY(document_id)
+            REFERENCES documents(document_id)
+
+    )
+    """)
+
+    # =========================
+    # Receipts Table
+    # =========================
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS receipts (
+
+        receipt_id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        user_id INTEGER NOT NULL,
+
+        document_id INTEGER NOT NULL,
+
+        amount REAL,
+
+        receiver TEXT,
+
+        sender TEXT,
+
+        transaction_id TEXT,
+
+        transaction_date TEXT,
+
+        created_at TEXT,
+
+        FOREIGN KEY(user_id)
+            REFERENCES users(user_id),
+
+        FOREIGN KEY(document_id)
+            REFERENCES documents(document_id)
 
     )
     """)
 
     connection.commit()
+
     connection.close()
 
     print("✅ Database tables created successfully.")
+
+
+
 
 
 def get_user_by_email(email):
@@ -360,7 +481,6 @@ def get_total_income(user_id, date_filter="all"):
 
     cursor.execute(query, params)
 
-    # 👇 Ye line zaroor honi chahiye
     result = cursor.fetchone()
 
     connection.close()
@@ -998,6 +1118,307 @@ def get_expense_category_summary(user_id):
 
 
 
+
+def get_documents_by_user(user_id):
+
+    connection = sqlite3.connect(DATABASE_NAME)
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM documents
+        WHERE user_id = ?
+        ORDER BY document_id DESC
+    """, (user_id,))
+
+    documents = cursor.fetchall()
+
+    connection.close()
+
+    return [dict(doc) for doc in documents]
+
+
+
+
+# =========================
+# Create Document
+# =========================
+
+def create_document(
+    user_id,
+    document_type,
+    file_name,
+    file_path,
+    ocr_text,
+    cleaned_text,
+    ai_result
+):
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        INSERT INTO documents
+        (
+            user_id,
+            document_type,
+            file_name,
+            file_path,
+            upload_date,
+            ocr_text,
+            cleaned_text,
+            ai_result
+        )
+
+        VALUES
+        (
+            ?, ?, ?, ?, date('now'),
+            ?, ?, ?
+        )
+        """,
+        (
+            user_id,
+            document_type,
+            file_name,
+            file_path,
+            ocr_text,
+            cleaned_text,
+            ai_result
+        )
+    )
+
+    document_id = cursor.lastrowid
+
+    connection.commit()
+    connection.close()
+
+    return document_id
+
+
+# =========================
+# Create Bill
+# =========================
+
+def create_bill(
+    user_id,
+    document_id,
+    name,
+    issue_date,
+    bill_month,
+    due_date,
+    reference_no,
+    payable_within_due_date,
+    payable_after_due_date
+):
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        INSERT INTO bills
+        (
+            user_id,
+            document_id,
+            name,
+            issue_date,
+            bill_month,
+            due_date,
+            reference_no,
+            payable_within_due_date,
+            payable_after_due_date,
+            created_at
+        )
+
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        """,
+        (
+            user_id,
+            document_id,
+            name,
+            issue_date,
+            bill_month,
+            due_date,
+            reference_no,
+            payable_within_due_date,
+            payable_after_due_date
+        )
+    )
+
+    bill_id = cursor.lastrowid
+
+    connection.commit()
+    connection.close()
+
+    return bill_id
+
+
+
+# =========================
+# Create Receipt
+# =========================
+
+def create_receipt(
+    user_id,
+    document_id,
+    amount,
+    receiver,
+    sender,
+    transaction_id,
+    transaction_date
+):
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        INSERT INTO receipts
+        (
+            user_id,
+            document_id,
+            amount,
+            receiver,
+            sender,
+            transaction_id,
+            transaction_date,
+            created_at
+        )
+
+        VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        """,
+        (
+            user_id,
+            document_id,
+            amount,
+            receiver,
+            sender,
+            transaction_id,
+            transaction_date
+        )
+    )
+
+    receipt_id = cursor.lastrowid
+
+    connection.commit()
+    connection.close()
+
+    return receipt_id
+
+
+def get_receipts_by_user(user_id):
+
+    connection = get_connection()
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        SELECT *
+        FROM receipts
+        WHERE user_id = ?
+        ORDER BY receipt_id DESC
+        """,
+        (user_id,)
+    )
+
+    receipts = cursor.fetchall()
+
+    connection.close()
+
+    return [dict(receipt) for receipt in receipts]
+
+
+def get_bills_by_user(user_id):
+
+    connection = get_connection()
+    connection.row_factory = sqlite3.Row
+
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        SELECT *
+        FROM bills
+        WHERE user_id = ?
+        ORDER BY bill_id DESC
+        """,
+        (user_id,)
+    )
+
+    bills = cursor.fetchall()
+
+    connection.close()
+
+    return [dict(bill) for bill in bills]
+
+
+def get_all_receipts():
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        SELECT
+            receipts.receipt_id,
+            users.username,
+            receipts.amount,
+            receipts.receiver,
+            receipts.sender,
+            receipts.transaction_id,
+            receipts.transaction_date
+        FROM receipts
+
+        JOIN users
+        ON receipts.user_id = users.user_id
+
+        ORDER BY receipts.receipt_id DESC
+        """
+    )
+
+    receipts = cursor.fetchall()
+
+    connection.close()
+
+    return receipts
+
+
+def get_all_bills():
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        SELECT
+            bills.bill_id,
+            users.username,
+            bills.name,
+            bills.issue_date,
+            bills.bill_month,
+            bills.due_date,
+            bills.reference_no,
+            bills.payable_within_due_date,
+            bills.payable_after_due_date
+        FROM bills
+
+        JOIN users
+        ON bills.user_id = users.user_id
+
+        ORDER BY bills.bill_id DESC
+        """
+    )
+
+    bills = cursor.fetchall()
+
+    connection.close()
+
+    return bills
 
 
 if __name__ == "__main__":

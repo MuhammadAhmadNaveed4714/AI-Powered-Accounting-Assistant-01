@@ -53,6 +53,11 @@ function Navbar() {
         Income
     </Link>
 
+
+    <Link to="/documents">
+    Documents
+    </Link>
+
 </div>
 
         <button

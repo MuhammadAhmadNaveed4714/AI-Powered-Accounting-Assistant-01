@@ -4,3 +4,12 @@ venv/
 __pycache__/
 *.pyc
 .env
+# Database
+backend/database/*.db
+
+# User uploaded files
+backend/uploads/
+
+# Generated reports
+backend/AI_Financial_Report.pdf
+backend/Admin_AI_Report.pdf

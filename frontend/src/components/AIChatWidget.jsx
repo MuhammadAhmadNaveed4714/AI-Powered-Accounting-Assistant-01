@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 
 const API = axios.create({
-    baseURL: "http://127.0.0.1:5000"
+    baseURL: "http://127.0.0.1:8080"
 });
 
 function AIChatWidget() {
@@ -18,6 +18,7 @@ function AIChatWidget() {
         }
     ]);
 
+
     const sendMessage = async () => {
 
         if (!message.trim()) return;
@@ -27,7 +28,11 @@ function AIChatWidget() {
             text: message
         };
 
-        setMessages((prev) => [...prev, userMessage]);
+        setMessages((prev) => [
+            ...prev,
+            userMessage
+        ]);
+
 
         try {
 
@@ -45,6 +50,7 @@ function AIChatWidget() {
                 }
             );
 
+
             setMessages((prev) => [
                 ...prev,
                 {
@@ -54,6 +60,8 @@ function AIChatWidget() {
             ]);
 
         } catch (error) {
+
+            console.log(error);
 
             setMessages((prev) => [
                 ...prev,
@@ -65,9 +73,11 @@ function AIChatWidget() {
 
         }
 
+
         setMessage("");
 
     };
+
 
     return (
 
@@ -93,6 +103,7 @@ function AIChatWidget() {
             >
                 💬
             </button>
+
 
             {isOpen && (
 
@@ -123,6 +134,7 @@ function AIChatWidget() {
                         🤖 AI Financial Assistant
                     </div>
 
+
                     <div
                         style={{
                             flex: 1,
@@ -139,6 +151,7 @@ function AIChatWidget() {
                                     marginBottom: "12px"
                                 }}
                             >
+
                                 <strong>
                                     {msg.sender}:
                                 </strong>
@@ -152,6 +165,7 @@ function AIChatWidget() {
                         ))}
 
                     </div>
+
 
                     <div
                         style={{
@@ -169,9 +183,11 @@ function AIChatWidget() {
                                 setMessage(e.target.value)
                             }
                             onKeyDown={(e) => {
+
                                 if (e.key === "Enter") {
                                     sendMessage();
                                 }
+
                             }}
                             style={{
                                 flex: 1,
@@ -180,6 +196,7 @@ function AIChatWidget() {
                                 border: "none"
                             }}
                         />
+
 
                         <button
                             onClick={sendMessage}

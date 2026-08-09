@@ -6,6 +6,7 @@ from reportlab.platypus import (
     Paragraph,
     Spacer
 )
+
 from reportlab.lib.styles import getSampleStyleSheet
 
 from openai import OpenAI
@@ -21,8 +22,11 @@ from db import (
     get_total_users,
     get_total_admins,
     get_system_total_income,
-    get_system_total_expenses
+    get_system_total_expenses,
+    get_all_receipts,
+    get_all_bills
 )
+
 
 admin_bp = Blueprint(
     "admin",
@@ -221,11 +225,87 @@ def admin_income():
 @jwt_required()
 def admin_delete_income(income_id):
 
-    delete_income(income_id)
+    deleted = delete_income(income_id)
+
+    if deleted == 0:
+
+        return jsonify(
+            {
+                "message": "Income not found."
+            }
+        ), 404
 
     return jsonify(
         {
             "message": "Income deleted successfully."
+        }
+    ), 200
+
+
+# =========================================================
+# Get All Receipts
+# =========================================================
+
+@admin_bp.route("/admin/receipts", methods=["GET"])
+@jwt_required()
+def admin_receipts():
+
+    receipts = get_all_receipts()
+
+    receipt_list = []
+
+    for receipt in receipts:
+
+        receipt_list.append(
+            {
+                "receipt_id": receipt[0],
+                "username": receipt[1],
+                "amount": receipt[2],
+                "receiver": receipt[3],
+                "sender": receipt[4],
+                "transaction_id": receipt[5],
+                "transaction_date": receipt[6]
+            }
+        )
+
+    return jsonify(
+        {
+            "receipts": receipt_list
+        }
+    ), 200
+
+
+# =========================================================
+# Get All Bills
+# =========================================================
+
+@admin_bp.route("/admin/bills", methods=["GET"])
+@jwt_required()
+def admin_bills():
+
+    bills = get_all_bills()
+
+    bill_list = []
+
+    for bill in bills:
+
+        bill_list.append(
+            {
+                "bill_id": bill[0],
+                "username": bill[1],
+                "name": bill[2],
+                "issue_date": bill[3],
+                "bill_month": bill[4],
+                "due_date": bill[5],
+                "reference_no": bill[6],
+                "payable_within_due_date": bill[7],
+                "payable_after_due_date": bill[8]
+            }
+        )
+
+    return jsonify(
+        {
+            "bills": bill_list
         }
     ), 200
 
@@ -324,8 +404,9 @@ def admin_ai_report():
         messages=[
 
             {
-    "role": "system",
-    "content": """
+                "role": "system",
+
+                "content": """
 You are a professional financial analyst.
 
 Generate a clean professional report.
@@ -338,10 +419,11 @@ Return plain text only.
 
 Keep the report under 200 words.
 """
-},
+            },
 
             {
                 "role": "user",
+
                 "content": f"""
 Total Users: {total_users}
 
@@ -376,7 +458,9 @@ Generate a professional report for the administrator.
         )
     )
 
-    story.append(Spacer(1, 20))
+    story.append(
+        Spacer(1, 20)
+    )
 
     story.append(
         Paragraph(
@@ -406,7 +490,9 @@ Generate a professional report for the administrator.
         )
     )
 
-    story.append(Spacer(1, 20))
+    story.append(
+        Spacer(1, 20)
+    )
 
     story.append(
         Paragraph(

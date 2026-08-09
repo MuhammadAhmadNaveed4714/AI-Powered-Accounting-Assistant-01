@@ -5,6 +5,7 @@ import {
     Navigate
 } from "react-router-dom";
 
+import Documents from "./pages/Documents";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -12,72 +13,142 @@ import Expenses from "./pages/Expenses";
 import Income from "./pages/Income";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboard from "./pages/AdminDashboard";
+
+
 function App() {
-  return (
-    <BrowserRouter>
-     <Routes>
-     
 
-     <Route
-    path="/"
-    element={<Navigate to="/login" />}
-/>
+    return (
 
+        <BrowserRouter>
 
+            <Routes>
 
-    {/* Register */}
-    <Route
-        path="/register"
-        element={<Register />}
-    />
+                {/* =========================================
+                    Home
+                ========================================= */}
 
-    {/* Login */}
-    <Route
-        path="/login"
-        element={<Login />}
-    />
-
-    <Route
-    path="/dashboard"
-    element={
-        <ProtectedRoute>
-            <Dashboard />
-        </ProtectedRoute>
-    }
-/>
-
-<Route
-    path="/expenses"
-    element={
-        <ProtectedRoute>
-            <Expenses />
-        </ProtectedRoute>
-    }
-/>
-
-<Route
-    path="/income"
-    element={
-        <ProtectedRoute>
-            <Income />
-        </ProtectedRoute>
-    }
-/>
+                <Route
+                    path="/"
+                    element={
+                        <Navigate
+                            to="/login"
+                            replace
+                        />
+                    }
+                />
 
 
-<Route
-    path="/admin-dashboard"
-    element={
-        <ProtectedRoute>
-            <AdminDashboard />
-        </ProtectedRoute>
-    }
-/>
+                {/* =========================================
+                    Register
+                ========================================= */}
+
+                <Route
+                    path="/register"
+                    element={<Register />}
+                />
 
 
-</Routes>
-    </BrowserRouter>
-  );
+                {/* =========================================
+                    Login
+                ========================================= */}
+
+                <Route
+                    path="/login"
+                    element={<Login />}
+                />
+
+
+                {/* =========================================
+                    User Dashboard
+                ========================================= */}
+
+                <Route
+                    path="/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <Dashboard />
+                        </ProtectedRoute>
+                    }
+                />
+
+
+                {/* =========================================
+                    Expenses
+                ========================================= */}
+
+                <Route
+                    path="/expenses"
+                    element={
+                        <ProtectedRoute>
+                            <Expenses />
+                        </ProtectedRoute>
+                    }
+                />
+
+
+                {/* =========================================
+                    Documents
+                ========================================= */}
+
+                <Route
+                    path="/documents"
+                    element={
+                        <ProtectedRoute>
+                            <Documents />
+                        </ProtectedRoute>
+                    }
+                />
+
+
+                {/* =========================================
+                    Income
+                ========================================= */}
+
+                <Route
+                    path="/income"
+                    element={
+                        <ProtectedRoute>
+                            <Income />
+                        </ProtectedRoute>
+                    }
+                />
+
+
+                {/* =========================================
+                    Admin Dashboard
+                ========================================= */}
+
+                <Route
+                    path="/admin-dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <AdminDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+
+
+                {/* =========================================
+                    Unknown Route
+                ========================================= */}
+
+                <Route
+                    path="*"
+                    element={
+                        <Navigate
+                            to="/login"
+                            replace
+                        />
+                    }
+                />
+
+            </Routes>
+
+        </BrowserRouter>
+
+    );
+
 }
+
 
 export default App;

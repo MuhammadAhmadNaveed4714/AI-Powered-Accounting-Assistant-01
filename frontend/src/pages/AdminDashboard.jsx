@@ -23,6 +23,8 @@ function AdminDashboard() {
     const [incomeDate, setIncomeDate] = useState("");
     const [aiSummary, setAiSummary] = useState("");
     const [aiLoading, setAiLoading] = useState(false);
+    const [receipts, setReceipts] = useState([]);
+    const [bills, setBills] = useState([]);
     const [stats, setStats] = useState({
     total_users: 0,
     total_admins: 0,
@@ -116,6 +118,74 @@ const fetchIncome = async () => {
 
 };
 
+const fetchReceipts = async () => {
+
+    try {
+
+        const token = localStorage.getItem("token");
+
+        const response = await API.get(
+            "/admin/receipts",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        setReceipts(
+            Array.isArray(response.data.receipts)
+                ? response.data.receipts
+                : []
+        );
+
+    } catch (error) {
+
+        console.log(error);
+
+        toast.error(
+            "Failed to load receipts."
+        );
+
+    }
+
+};
+
+
+const fetchBills = async () => {
+
+    try {
+
+        const token = localStorage.getItem("token");
+
+        const response = await API.get(
+            "/admin/bills",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        setBills(
+            Array.isArray(response.data.bills)
+                ? response.data.bills
+                : []
+        );
+
+    } catch (error) {
+
+        console.log(error);
+
+        toast.error(
+            "Failed to load bills."
+        );
+
+    }
+
+};
+
+
 
 const fetchStats = async () => {
 
@@ -151,10 +221,11 @@ const fetchStats = async () => {
     fetchUsers();
     fetchExpenses();
     fetchIncome();
+    fetchReceipts();
+    fetchBills();
     fetchStats();
 
 }, []);
-
 
     const handleDeleteUser = async (userId) => {
 
@@ -1364,6 +1435,359 @@ color: "#ffffff"
     </tbody>
 
 </table>
+
+<hr />
+
+<h3>
+    🧾 All Receipts
+</h3>
+
+<table
+    style={{
+        width: "100%",
+        borderCollapse: "collapse",
+        marginTop: "20px",
+        backgroundColor: "#ffffff",
+        color: "#222222",
+        border: "1px solid #ddd"
+    }}
+>
+
+    <thead>
+
+        <tr
+            style={{
+                backgroundColor: "#1976D2",
+                color: "#ffffff"
+            }}
+        >
+
+            <th style={{ padding: "10px" }}>
+                ID
+            </th>
+
+            <th style={{ padding: "10px" }}>
+                User
+            </th>
+
+            <th style={{ padding: "10px" }}>
+                Amount
+            </th>
+
+            <th style={{ padding: "10px" }}>
+                Receiver
+            </th>
+
+            <th style={{ padding: "10px" }}>
+                Sender
+            </th>
+
+            <th style={{ padding: "10px" }}>
+                Transaction ID
+            </th>
+
+            <th style={{ padding: "10px" }}>
+                Transaction Date
+            </th>
+
+        </tr>
+
+    </thead>
+
+
+    <tbody>
+
+        {receipts.length === 0 ? (
+
+            <tr>
+
+                <td
+                    colSpan="7"
+                    style={{
+                        textAlign: "center",
+                        padding: "20px"
+                    }}
+                >
+                    No receipts found.
+                </td>
+
+            </tr>
+
+        ) : (
+
+            receipts.map((receipt) => (
+
+                <tr key={receipt.receipt_id}>
+
+                    <td
+                        style={{
+                            padding: "10px",
+                            borderBottom: "1px solid #ddd"
+                        }}
+                    >
+                        {receipt.receipt_id}
+                    </td>
+
+
+                    <td
+                        style={{
+                            padding: "10px",
+                            borderBottom: "1px solid #ddd"
+                        }}
+                    >
+                        {receipt.username}
+                    </td>
+
+
+                    <td
+                        style={{
+                            padding: "10px",
+                            borderBottom: "1px solid #ddd"
+                        }}
+                    >
+                        Rs. {receipt.amount}
+                    </td>
+
+
+                    <td
+                        style={{
+                            padding: "10px",
+                            borderBottom: "1px solid #ddd"
+                        }}
+                    >
+                        {receipt.receiver}
+                    </td>
+
+
+                    <td
+                        style={{
+                            padding: "10px",
+                            borderBottom: "1px solid #ddd"
+                        }}
+                    >
+                        {receipt.sender}
+                    </td>
+
+
+                    <td
+                        style={{
+                            padding: "10px",
+                            borderBottom: "1px solid #ddd"
+                        }}
+                    >
+                        {receipt.transaction_id}
+                    </td>
+
+
+                    <td
+                        style={{
+                            padding: "10px",
+                            borderBottom: "1px solid #ddd"
+                        }}
+                    >
+                        {receipt.transaction_date}
+                    </td>
+
+                </tr>
+
+            ))
+
+        )}
+
+    </tbody>
+
+</table>
+
+<hr />
+
+<h3>
+    🧾 All Bills
+</h3>
+
+<table
+    style={{
+        width: "100%",
+        borderCollapse: "collapse",
+        marginTop: "20px",
+        backgroundColor: "#ffffff",
+        color: "#222222",
+        border: "1px solid #ddd"
+    }}
+>
+
+    <thead>
+
+        <tr
+            style={{
+                backgroundColor: "#1976D2",
+                color: "#ffffff"
+            }}
+        >
+
+            <th style={{ padding: "10px" }}>
+                ID
+            </th>
+
+            <th style={{ padding: "10px" }}>
+                User
+            </th>
+
+            <th style={{ padding: "10px" }}>
+                Name
+            </th>
+
+            <th style={{ padding: "10px" }}>
+                Issue Date
+            </th>
+
+            <th style={{ padding: "10px" }}>
+                Bill Month
+            </th>
+
+            <th style={{ padding: "10px" }}>
+                Due Date
+            </th>
+
+            <th style={{ padding: "10px" }}>
+                Reference No
+            </th>
+
+            <th style={{ padding: "10px" }}>
+                Payable Within Due Date
+            </th>
+
+            <th style={{ padding: "10px" }}>
+                Payable After Due Date
+            </th>
+
+        </tr>
+
+    </thead>
+
+
+    <tbody>
+
+        {bills.length === 0 ? (
+
+            <tr>
+
+                <td
+                    colSpan="9"
+                    style={{
+                        textAlign: "center",
+                        padding: "20px"
+                    }}
+                >
+                    No bills found.
+                </td>
+
+            </tr>
+
+        ) : (
+
+            bills.map((bill) => (
+
+                <tr key={bill.bill_id}>
+
+                    <td
+                        style={{
+                            padding: "10px",
+                            borderBottom: "1px solid #ddd"
+                        }}
+                    >
+                        {bill.bill_id}
+                    </td>
+
+
+                    <td
+                        style={{
+                            padding: "10px",
+                            borderBottom: "1px solid #ddd"
+                        }}
+                    >
+                        {bill.username}
+                    </td>
+
+
+                    <td
+                        style={{
+                            padding: "10px",
+                            borderBottom: "1px solid #ddd"
+                        }}
+                    >
+                        {bill.name}
+                    </td>
+
+
+                    <td
+                        style={{
+                            padding: "10px",
+                            borderBottom: "1px solid #ddd"
+                        }}
+                    >
+                        {bill.issue_date}
+                    </td>
+
+
+                    <td
+                        style={{
+                            padding: "10px",
+                            borderBottom: "1px solid #ddd"
+                        }}
+                    >
+                        {bill.bill_month}
+                    </td>
+
+
+                    <td
+                        style={{
+                            padding: "10px",
+                            borderBottom: "1px solid #ddd"
+                        }}
+                    >
+                        {bill.due_date}
+                    </td>
+
+
+                    <td
+                        style={{
+                            padding: "10px",
+                            borderBottom: "1px solid #ddd"
+                        }}
+                    >
+                        {bill.reference_no}
+                    </td>
+
+
+                    <td
+                        style={{
+                            padding: "10px",
+                            borderBottom: "1px solid #ddd"
+                        }}
+                    >
+                        Rs. {bill.payable_within_due_date}
+                    </td>
+
+
+                    <td
+                        style={{
+                            padding: "10px",
+                            borderBottom: "1px solid #ddd"
+                        }}
+                    >
+                        Rs. {bill.payable_after_due_date}
+                    </td>
+
+                </tr>
+
+            ))
+
+        )}
+
+    </tbody>
+
+</table>
+
 
 
 

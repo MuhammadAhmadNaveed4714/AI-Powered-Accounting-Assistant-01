@@ -9,6 +9,7 @@ from routes.income import income_bp
 from routes.dashboard import dashboard_bp
 from routes.admin import admin_bp
 from routes.ai_report import ai_report_bp
+from routes.documents import documents_bp
 import os
 
 app = Flask(__name__)
@@ -31,19 +32,23 @@ app.register_blueprint(dashboard_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(ai_bp)
 app.register_blueprint(ai_report_bp)
+app.register_blueprint(documents_bp)
 
-FRONTEND_FOLDER = os.path.join(app.root_path, "frontend_build")
+# FRONTEND_FOLDER = os.path.join(app.root_path, "frontend_build")
 
+# @app.route("/", defaults={"path": ""})
+# @app.route("/<path:path>")
+# def serve(path):
+#     requested = os.path.join(FRONTEND_FOLDER, path)
 
-@app.route("/", defaults={"path": ""})
-@app.route("/<path:path>")
-def serve(path):
-    requested = os.path.join(FRONTEND_FOLDER, path)
+#     if path and os.path.exists(requested):
+#         return send_from_directory(FRONTEND_FOLDER, path)
 
-    if path and os.path.exists(requested):
-        return send_from_directory(FRONTEND_FOLDER, path)
+#     return send_from_directory(FRONTEND_FOLDER, "index.html")
 
-    return send_from_directory(FRONTEND_FOLDER, "index.html")
+@app.route("/uploads/<filename>")
+def serve_uploaded_file(filename):
+    return send_from_directory("uploads", filename)
 
 
 if __name__ == "__main__":
@@ -51,3 +56,7 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=int(os.environ.get("PORT", 8080))
     )
+
+
+
+
