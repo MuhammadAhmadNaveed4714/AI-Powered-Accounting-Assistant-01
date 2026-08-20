@@ -612,77 +612,7 @@ const downloadPDF = () => {
     doc.save("Admin_Report.pdf");
 
 };
-const downloadAIAdminReport = async () => {
 
-    try {
-
-        const token = localStorage.getItem("token");
-
-
-        const response = await axios.get(
-
-            "http://127.0.0.1:5000/admin/ai/report",
-
-            {
-                headers: {
-                    Authorization:
-                    `Bearer ${token}`
-                },
-
-                responseType:"blob"
-            }
-
-        );
-
-
-        const file = new Blob(
-
-            [response.data],
-
-            {
-                type:"application/pdf"
-            }
-
-        );
-
-
-        const url =
-        window.URL.createObjectURL(file);
-
-
-        const link =
-        document.createElement("a");
-
-
-        link.href = url;
-
-
-        link.download =
-        "Admin_AI_Report.pdf";
-
-
-        document.body.appendChild(link);
-
-
-        link.click();
-
-
-        link.remove();
-
-
-    }
-
-    catch(error){
-
-        console.log(error);
-
-        toast.error(
-            "Failed to generate AI Admin Report"
-        );
-
-    }
-
-};
 
     return (
 
@@ -851,34 +781,6 @@ fontWeight: "bold"
 
 </button>
 
-
-<button
-
-onClick={downloadAIAdminReport}
-
-style={{
-
-backgroundColor:"#673AB7",
-
-color:"white",
-
-padding:"10px 20px",
-
-border:"none",
-
-borderRadius:"5px",
-
-cursor:"pointer",
-
-marginLeft:"10px"
-
-}}
-
->
-
-🤖 Generate AI Admin Report
-
-</button>
 
 
 
