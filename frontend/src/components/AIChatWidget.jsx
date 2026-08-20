@@ -1,9 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
+import API from "../services/api";
 
-const API = axios.create({
-    baseURL: "http://127.0.0.1:8080"
-});
 
 function AIChatWidget() {
 
@@ -11,27 +8,34 @@ function AIChatWidget() {
 
     const [message, setMessage] = useState("");
 
+    const [loading, setLoading] = useState(false);
+
     const [messages, setMessages] = useState([
         {
             sender: "AI",
-            text: "👋 Hello! I am your AI Financial Assistant."
+            text: "👋 Hello! I am your AI Financial Assistant. Ask me anything about your finances."
         }
     ]);
 
 
     const sendMessage = async () => {
 
-        if (!message.trim()) return;
+        if (!message.trim() || loading) return;
+
+        const currentMessage = message.trim();
 
         const userMessage = {
             sender: "You",
-            text: message
+            text: currentMessage
         };
 
         setMessages((prev) => [
             ...prev,
             userMessage
         ]);
+
+        setMessage("");
+        setLoading(true);
 
 
         try {
@@ -41,11 +45,12 @@ function AIChatWidget() {
             const response = await API.post(
                 "/ai/chat",
                 {
-                    message: message
+                    message: currentMessage
                 },
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json"
                     }
                 }
             );
@@ -55,26 +60,55 @@ function AIChatWidget() {
                 ...prev,
                 {
                     sender: "AI",
-                    text: response.data.reply
-                }
-            ]);
-
-        } catch (error) {
-
-            console.log(error);
-
-            setMessages((prev) => [
-                ...prev,
-                {
-                    sender: "AI",
-                    text: "❌ Failed to contact AI."
+                    text:
+                        response.data.reply ||
+                        "I could not generate a response."
                 }
             ]);
 
         }
+        catch (error) {
 
+    console.log(
+        "AI CHAT ERROR:",
+        error.response?.data || error.message || error
+    );
 
-        setMessage("");
+    let errorMessage = "❌ Unable to generate AI response.";
+
+    if (error.response?.status === 401) {
+
+        errorMessage =
+            "🔐 Your session has expired. Please login again.";
+
+    }
+    else if (error.response?.data?.message) {
+
+        errorMessage =
+            `❌ ${error.response.data.message}`;
+
+    }
+    else if (error.response?.data?.error) {
+
+        errorMessage =
+            `❌ ${error.response.data.error}`;
+
+    }
+
+    setMessages((prev) => [
+        ...prev,
+        {
+            sender: "AI",
+            text: errorMessage
+        }
+    ]);
+
+}
+        finally {
+
+            setLoading(false);
+
+        }
 
     };
 
@@ -82,6 +116,8 @@ function AIChatWidget() {
     return (
 
         <>
+
+            {/* Chat Button */}
 
             <button
                 onClick={() => setIsOpen(!isOpen)}
@@ -97,13 +133,16 @@ function AIChatWidget() {
                     color: "white",
                     fontSize: "26px",
                     cursor: "pointer",
-                    boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+                    boxShadow:
+                        "0 4px 10px rgba(0,0,0,0.3)",
                     zIndex: 9999
                 }}
             >
-                💬
+                {isOpen ? "✕" : "💬"}
             </button>
 
+
+            {/* Chat Window */}
 
             {isOpen && (
 
@@ -116,30 +155,43 @@ function AIChatWidget() {
                         height: "500px",
                         background: "#1E1E1E",
                         color: "white",
-                        borderRadius: "10px",
+                        borderRadius: "12px",
                         display: "flex",
                         flexDirection: "column",
-                        boxShadow: "0 5px 20px rgba(0,0,0,0.4)",
-                        zIndex: 9999
+                        boxShadow:
+                            "0 5px 20px rgba(0,0,0,0.4)",
+                        zIndex: 9999,
+                        overflow: "hidden"
                     }}
                 >
+
+                    {/* Header */}
 
                     <div
                         style={{
                             padding: "15px",
                             background: "#1976D2",
-                            fontWeight: "bold"
+                            fontWeight: "bold",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between"
                         }}
                     >
-                        🤖 AI Financial Assistant
+
+                        <span>
+                            🤖 AI Financial Assistant
+                        </span>
+
                     </div>
 
+
+                    {/* Messages */}
 
                     <div
                         style={{
                             flex: 1,
                             overflowY: "auto",
-                            padding: "10px"
+                            padding: "15px"
                         }}
                     >
 
@@ -148,43 +200,107 @@ function AIChatWidget() {
                             <div
                                 key={index}
                                 style={{
-                                    marginBottom: "12px"
+                                    marginBottom: "15px",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems:
+                                        msg.sender === "You"
+                                            ? "flex-end"
+                                            : "flex-start"
                                 }}
                             >
 
-                                <strong>
-                                    {msg.sender}:
-                                </strong>
+                                <div
+                                    style={{
+                                        fontSize: "12px",
+                                        fontWeight: "bold",
+                                        marginBottom: "5px",
+                                        color:
+                                            msg.sender === "You"
+                                                ? "#90CAF9"
+                                                : "#81C784"
+                                    }}
+                                >
+                                    {msg.sender === "You"
+                                        ? "You"
+                                        : "🤖 AI Assistant"}
+                                </div>
 
-                                <br />
 
-                                {msg.text}
+                                <div
+                                    style={{
+                                        background:
+                                            msg.sender === "You"
+                                                ? "#1976D2"
+                                                : "#333333",
+                                        padding: "10px 12px",
+                                        borderRadius: "10px",
+                                        maxWidth: "85%",
+                                        lineHeight: "1.5",
+                                        fontSize: "14px",
+                                        whiteSpace: "pre-line",
+                                        wordBreak: "break-word"
+                                    }}
+                                >
+                                    <div
+    style={{
+        whiteSpace: "pre-wrap",
+        lineHeight: "1.6",
+        fontSize: "14px"
+    }}
+>
+    {msg.text}
+</div>
+                                </div>
 
                             </div>
 
                         ))}
 
+
+                        {loading && (
+
+                            <div
+                                style={{
+                                    color: "#81C784",
+                                    fontSize: "14px",
+                                    padding: "10px"
+                                }}
+                            >
+                                🤖 AI is thinking...
+                            </div>
+
+                        )}
+
                     </div>
 
+
+                    {/* Input */}
 
                     <div
                         style={{
                             display: "flex",
                             padding: "10px",
-                            gap: "8px"
+                            gap: "8px",
+                            borderTop:
+                                "1px solid #444"
                         }}
                     >
 
                         <input
                             type="text"
-                            placeholder="Ask AI..."
+                            placeholder="Ask your financial assistant..."
                             value={message}
+                            disabled={loading}
                             onChange={(e) =>
                                 setMessage(e.target.value)
                             }
                             onKeyDown={(e) => {
 
-                                if (e.key === "Enter") {
+                                if (
+                                    e.key === "Enter" &&
+                                    !loading
+                                ) {
                                     sendMessage();
                                 }
 
@@ -192,24 +308,35 @@ function AIChatWidget() {
                             style={{
                                 flex: 1,
                                 padding: "10px",
-                                borderRadius: "5px",
-                                border: "none"
+                                borderRadius: "6px",
+                                border: "none",
+                                outline: "none"
                             }}
                         />
 
 
                         <button
                             onClick={sendMessage}
+                            disabled={loading}
                             style={{
-                                background: "#1976D2",
+                                background:
+                                    loading
+                                        ? "#666"
+                                        : "#1976D2",
                                 color: "white",
                                 border: "none",
                                 padding: "10px 15px",
-                                borderRadius: "5px",
-                                cursor: "pointer"
+                                borderRadius: "6px",
+                                cursor:
+                                    loading
+                                        ? "not-allowed"
+                                        : "pointer",
+                                fontWeight: "bold"
                             }}
                         >
-                            Send
+
+                            {loading ? "..." : "Send"}
+
                         </button>
 
                     </div>

@@ -3,6 +3,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import re
+
 from flask_jwt_extended import (
     jwt_required,
     get_jwt_identity
@@ -19,10 +20,19 @@ load_dotenv()
 
 ai_bp = Blueprint("ai", __name__)
 
+
+# =========================================================
+# OPENAI CLIENT
+# =========================================================
+
 client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY")
 )
 
+
+# =========================================================
+# AI CHAT
+# =========================================================
 
 @ai_bp.route("/ai/chat", methods=["POST"])
 @jwt_required()
@@ -30,9 +40,17 @@ def ai_chat():
 
     data = request.get_json()
 
+    if not data:
+
+        return jsonify(
+            {
+                "message": "Request data is required."
+            }
+        ), 400
+
     message = data.get("message")
 
-    if not message:
+    if not message or not message.strip():
 
         return jsonify(
             {
@@ -42,11 +60,16 @@ def ai_chat():
 
     try:
 
-        user_id = get_jwt_identity()
+        # =================================================
+        # GET LOGGED-IN USER
+        # =================================================
 
-        # ==========================
-        # Financial Data
-        # ==========================
+        user_id = int(get_jwt_identity())
+
+
+        # =================================================
+        # FINANCIAL DATA
+        # =================================================
 
         total_income = get_total_income(user_id)
 
@@ -56,15 +79,21 @@ def ai_chat():
 
         predicted_monthly = predict_monthly_expenses(user_id)
 
-        predicted_balance = total_income - predicted_monthly
+        predicted_balance = (
+            total_income - predicted_monthly
+        )
 
-        # ==========================
-        # Purchase Amount Detection
-        # ==========================
+
+        # =================================================
+        # PURCHASE AMOUNT DETECTION
+        # =================================================
 
         purchase_amount = None
 
-        match = re.search(r'(\d+(?:,\d+)*)', message)
+        match = re.search(
+            r'(\d+(?:,\d+)*)',
+            message
+        )
 
         if match:
 
@@ -72,17 +101,23 @@ def ai_chat():
                 match.group(1).replace(",", "")
             )
 
-        # ==========================
-        # Financial Risk
-        # ==========================
+
+        # =================================================
+        # FINANCIAL RISK
+        # =================================================
 
         if predicted_balance < 0:
 
-            overspending = abs(predicted_balance)
+            overspending = abs(
+                predicted_balance
+            )
 
             risk = "HIGH"
 
-        elif predicted_balance < (total_income * 0.20):
+        elif (
+            total_income > 0
+            and predicted_balance < (total_income * 0.20)
+        ):
 
             overspending = 0
 
@@ -94,11 +129,14 @@ def ai_chat():
 
             risk = "LOW"
 
-        # ==========================
-        # Expense Categories
-        # ==========================
 
-        category_summary = get_expense_category_summary(user_id)
+        # =================================================
+        # EXPENSE CATEGORIES
+        # =================================================
+
+        category_summary = (
+            get_expense_category_summary(user_id)
+        )
 
         category_text = ""
 
@@ -106,11 +144,14 @@ def ai_chat():
 
         highest_amount = 0
 
+
         if category_summary:
 
             for category, amount in category_summary:
 
-                category_text += f"- {category}: Rs. {amount}\n"
+                category_text += (
+                    f"- {category}: Rs. {amount}\n"
+                )
 
                 if amount > highest_amount:
 
@@ -120,19 +161,22 @@ def ai_chat():
 
         else:
 
-            category_text = "No expenses recorded."
+            category_text = (
+                "No expenses recorded."
+            )
 
-        # ==========================
-        # Context for AI
-        # ==========================
+
+        # =================================================
+        # FINANCIAL CONTEXT
+        # =================================================
 
         financial_context = f"""
-User Financial Information
+USER FINANCIAL INFORMATION
 
-Current Income:
+Total Income:
 Rs. {total_income}
 
-Current Expenses:
+Total Expenses:
 Rs. {total_expenses}
 
 Current Balance:
@@ -144,7 +188,7 @@ Rs. {predicted_monthly}
 Predicted Month-End Balance:
 Rs. {predicted_balance}
 
-Overspending Amount:
+Potential Overspending:
 Rs. {overspending}
 
 Financial Risk:
@@ -158,13 +202,13 @@ Expense Category Breakdown:
 {category_text}
 
 Proposed Purchase Amount:
-
-Rs. {purchase_amount if purchase_amount else "Not Provided"}
+Rs. {purchase_amount if purchase_amount is not None else "Not Provided"}
 """
 
-        # ==========================
-        # OpenAI
-        # ==========================
+
+        # =================================================
+        # OPENAI REQUEST
+        # =================================================
 
         response = client.chat.completions.create(
 
@@ -174,65 +218,138 @@ Rs. {purchase_amount if purchase_amount else "Not Provided"}
 
                 {
                     "role": "system",
+
                     "content": """
-You are an expert AI Financial Advisor.
+You are a professional AI Financial Assistant.
 
-Always analyze the user's financial data before answering.
+Analyze the user's financial information before answering.
 
-Responsibilities:
+IMPORTANT RULES:
 
-- Analyze income and expenses.
-- Predict future spending.
-- Explain financial health.
-- Mention the highest spending category.
-- Give budgeting advice.
-- Give saving suggestions.
-- Predict whether the user may run out of money.
+1. Use ONLY the financial information provided.
+2. Never invent income, expenses, balances or transactions.
+3. Keep answers short, clear and easy to understand.
+4. Avoid unnecessary explanations.
+5. Do not use tables.
+6. Avoid complicated financial terminology.
+7. Use short paragraphs.
+8. Use simple bullet points when helpful.
+9. Give practical and realistic financial advice.
+10. Do not repeat the entire financial context.
 
-If the user asks whether they can buy something:
+When discussing financial health, consider:
 
-- Compare purchase amount with income.
-- Compare purchase amount with balance.
-- Compare purchase amount with predicted monthly expenses.
-- Decide whether it is financially safe.
+- Income
+- Expenses
+- Current balance
+- Predicted monthly expenses
+- Predicted month-end balance
+- Financial risk
+- Highest spending category
+
+If the user asks whether they can afford a purchase:
+
 - Clearly answer YES or NO.
-- Explain why.
-- Give practical financial advice.
+- Compare the purchase amount with their current balance.
+- Consider predicted monthly expenses.
+- Explain the reason briefly.
+- Give one practical recommendation.
 
-Never invent financial information.
+RESPONSE STYLE:
 
-Always answer ONLY using the provided financial data.
+Keep the response under 120 words.
+
+Use this structure when appropriate:
+
+💡 Conclusion:
+Give the main answer in 1-2 sentences.
+
+📊 Financial Insight:
+Briefly explain the relevant financial situation.
+
+💰 Recommendation:
+Give one practical recommendation.
+
+Do not use # headings.
+Do not write long paragraphs.
+Do not repeat information unnecessarily.
 """
                 },
 
                 {
                     "role": "system",
+
                     "content": financial_context
                 },
 
                 {
                     "role": "user",
-                    "content": message
+
+                    "content": message.strip()
                 }
 
-            ]
+            ],
+
+            temperature=0.4,
+
+            max_tokens=250
 
         )
 
+
+        # =================================================
+        # GET AI RESPONSE
+        # =================================================
+
+        ai_reply = (
+            response
+            .choices[0]
+            .message
+            .content
+            .strip()
+        )
+
+
+        # =================================================
+        # RETURN RESPONSE
+        # =================================================
+
         return jsonify(
             {
-                "reply": response.choices[0].message.content
+                "reply": ai_reply
             }
         ), 200
 
-    except Exception as e:
+
+    except Exception as error:
 
         import traceback
 
+        print(
+            "========================================"
+        )
+
+        print(
+            "AI CHAT ERROR:"
+        )
+
+        print(
+            str(error)
+        )
+
         traceback.print_exc()
+
+        print(
+            "========================================"
+        )
+
 
         return jsonify(
             {
-                "error": str(e)
+                "message": (
+                    "Failed to generate AI response."
+                ),
+
+                "error": str(error)
             }
-        ), 500       
+        ), 500
