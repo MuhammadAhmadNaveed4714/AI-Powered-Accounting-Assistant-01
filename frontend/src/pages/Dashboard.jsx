@@ -245,64 +245,6 @@ useEffect(() => {
 
 
 
-const downloadAIReport = async () => {
-
-    try {
-
-        const token = localStorage.getItem("token");
-
-
-        const response = await axios.get(
-            "http://127.0.0.1:5000/ai/report",
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                },
-
-                responseType: "blob"
-            }
-        );
-
-
-        const file = new Blob(
-            [response.data],
-            {
-                type: "application/pdf"
-            }
-        );
-
-
-        const url = window.URL.createObjectURL(
-            file
-        );
-
-
-        const link = document.createElement("a");
-
-        link.href = url;
-
-        link.download = "AI_Financial_Report.pdf";
-
-
-        document.body.appendChild(link);
-
-        link.click();
-
-
-        link.remove();
-
-
-    } catch (error) {
-
-        console.log(error);
-
-        alert(
-            "Failed to generate AI report"
-        );
-
-    }
-
-};
 
     if (loading) {
 
@@ -450,19 +392,7 @@ const downloadAIReport = async () => {
 
         </button>
 
-        <button
-    onClick={downloadAIReport}
-    style={{
-        backgroundColor:"#1976D2",
-        color:"white",
-        padding:"10px 20px",
-        border:"none",
-        borderRadius:"5px",
-        cursor:"pointer"
-    }}
->
-    🤖 Generate AI Financial Report
-</button>
+       
 
     </div>
 
