@@ -142,11 +142,13 @@ const generateAISummary = async () => {
     "/dashboard/ai-summary",
     {
         params: {
-            filter: dateFilter
+            filter: dateFilter,
+            t: Date.now()
         },
 
         headers: {
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
+            "Cache-Control": "no-cache"
         }
     }
 );
