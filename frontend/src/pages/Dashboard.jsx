@@ -48,6 +48,8 @@ function Dashboard() {
     const [monthlyData, setMonthlyData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [dateFilter, setDateFilter] = useState("all"); 
+    const [aiSummary, setAiSummary] = useState("");
+    const [aiLoading, setAiLoading] = useState(false);
     const fetchSummary = async () => {
 
     try {
@@ -128,6 +130,53 @@ function Dashboard() {
 
 };
 
+const generateAISummary = async () => {
+
+    try {
+
+        setAiLoading(true);
+
+        const token = localStorage.getItem("token");
+
+       const response = await API.get(
+    "/dashboard/ai-summary",
+    {
+        params: {
+            filter: dateFilter
+        },
+
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }
+);
+
+        setAiSummary(
+            response.data.ai_summary
+        );
+
+    }
+    catch (error) {
+
+        console.log(error);
+
+        toast.error(
+            "Failed to generate AI summary."
+        );
+
+    }
+    finally {
+
+        setAiLoading(false);
+
+    }
+
+};
+
+
+
+
+
     useEffect(() => {
 
     const savedTheme = localStorage.getItem("darkMode");
@@ -137,6 +186,104 @@ function Dashboard() {
     document.title = "Dashboard | AI Accounting Assistant";
 
 }, []);
+
+const downloadAISummaryPDF = () => {
+
+    if (!aiSummary) {
+
+        toast.error(
+            "Please generate the AI summary first."
+        );
+
+        return;
+
+    }
+
+    const doc = new jsPDF();
+
+    doc.setFontSize(20);
+
+    doc.text(
+        "AI Accounting Assistant",
+        20,
+        20
+    );
+
+    doc.setFontSize(15);
+
+    doc.text(
+        "AI Financial Summary",
+        20,
+        32
+    );
+
+    doc.setFontSize(11);
+
+    doc.text(
+        `Generated on: ${new Date().toLocaleString()}`,
+        20,
+        42
+    );
+
+    autoTable(doc, {
+
+        startY: 52,
+
+        head: [
+            ["Financial Summary", "Amount"]
+        ],
+
+        body: [
+
+            [
+                "Total Income",
+                `Rs. ${(summary.total_income || 0).toFixed(2)}`
+            ],
+
+            [
+                "Total Expenses",
+                `Rs. ${(summary.total_expenses || 0).toFixed(2)}`
+            ],
+
+            [
+                "Balance",
+                `Rs. ${(summary.balance || 0).toFixed(2)}`
+            ]
+
+        ]
+
+    });
+
+    const finalY = doc.lastAutoTable
+        ? doc.lastAutoTable.finalY
+        : 52;
+
+    doc.setFontSize(14);
+
+    doc.text(
+        "AI Financial Analysis",
+        20,
+        finalY + 20
+    );
+
+    doc.setFontSize(11);
+
+    const lines = doc.splitTextToSize(
+        aiSummary,
+        170
+    );
+
+    doc.text(
+        lines,
+        20,
+        finalY + 32
+    );
+
+    doc.save(
+        "AI_Financial_Summary.pdf"
+    );
+
+};
 
 
 useEffect(() => {
@@ -392,7 +539,90 @@ useEffect(() => {
 
         </button>
 
-       
+       <button
+    onClick={generateAISummary}
+    style={{
+        padding: "10px 20px",
+        backgroundColor: "#6A1B9A",
+        color: "white",
+        border: "none",
+        borderRadius: "5px",
+        cursor: "pointer",
+        fontWeight: "bold"
+    }}
+>
+    {
+        aiLoading
+            ? "🤖 Generating AI..."
+            : "🤖 Generate AI Summary"
+    }
+</button>
+
+{aiLoading && (
+    <div
+        style={{
+            marginTop: "20px",
+            padding: "20px",
+            background: "#f3e5f5",
+            borderRadius: "10px",
+            textAlign: "center",
+            border: "1px solid #ce93d8"
+        }}
+    >
+        🤖 Generating AI Summary...
+    </div>
+)}
+
+{aiSummary && !aiLoading && (
+    <div
+        style={{
+            marginTop: "20px",
+            padding: "25px",
+            background: "#ffffff",
+            borderRadius: "10px",
+            border: "1px solid #ce93d8",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.08)"
+        }}
+    >
+
+        <h2
+            style={{
+                color: "#6A1B9A",
+                marginBottom: "15px"
+            }}
+        >
+            🤖 AI Financial Summary
+        </h2>
+
+        <div
+            style={{
+                lineHeight: "1.7",
+                whiteSpace: "pre-line",
+                color: "#333",
+                fontSize: "15px"
+            }}
+        >
+            {aiSummary}
+        </div>
+
+        <button
+            onClick={downloadAISummaryPDF}
+            style={{
+                marginTop: "20px",
+                padding: "10px 20px",
+                backgroundColor: "#2E7D32",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontWeight: "bold"
+            }}
+        >
+            📄 Download AI Summary
+        </button>
+
+    </div>
+)}
 
     </div>
 
@@ -553,6 +783,7 @@ useEffect(() => {
 
 
             <hr />
+
     
 <h2 className="chart-title">
     Expense Categories
