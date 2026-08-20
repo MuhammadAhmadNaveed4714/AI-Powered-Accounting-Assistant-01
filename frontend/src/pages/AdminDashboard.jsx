@@ -495,6 +495,79 @@ const generateAdminAI = async () => {
 };
 
 
+const downloadAISummary = () => {
+
+    if (!aiSummary) {
+        toast.error("Please generate AI summary first.");
+        return;
+    }
+
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text(
+        "AI Accounting Assistant - Admin AI Summary",
+        14,
+        20
+    );
+
+    doc.setFontSize(12);
+
+    doc.text(
+        "Financial Summary for Administrator",
+        14,
+        32
+    );
+
+    doc.text(
+        `Total Users: ${stats.total_users}`,
+        14,
+        45
+    );
+
+    doc.text(
+        `Total Admins: ${stats.total_admins}`,
+        14,
+        53
+    );
+
+    doc.text(
+        `Total Income: Rs. ${stats.total_income}`,
+        14,
+        61
+    );
+
+    doc.text(
+        `Total Expenses: Rs. ${stats.total_expenses}`,
+        14,
+        69
+    );
+
+    doc.setFontSize(14);
+
+    doc.text(
+        "AI Financial Analysis",
+        14,
+        85
+    );
+
+    doc.setFontSize(11);
+
+    const lines = doc.splitTextToSize(
+        aiSummary,
+        180
+    );
+
+    doc.text(
+        lines,
+        14,
+        97
+    );
+
+    doc.save("AI_Admin_Summary.pdf");
+};
+
+
 const downloadPDF = () => {
 
     const doc = new jsPDF();
@@ -781,33 +854,257 @@ fontWeight: "bold"
 </button>
 
 
-
-
 {
-aiSummary &&
+    aiSummary &&
 
-<div
-style={{
-    marginTop:"20px",
-    padding:"20px",
-    background:"#f4f4f4",
-    borderRadius:"10px"
-}}
->
+    <div
+        style={{
+            marginTop: "25px",
+            padding: "25px",
+            background: "#ffffff",
+            borderRadius: "12px",
+            boxShadow: "0 3px 12px rgba(0,0,0,0.12)",
+            border: "1px solid #e0e0e0"
+        }}
+    >
 
-<h2>
-🤖 AI Admin Analysis
-</h2>
+        {/* Header */}
+
+        <h2
+            style={{
+                color: "#6A1B9A",
+                marginBottom: "20px"
+            }}
+        >
+            🤖 AI Admin Analysis
+        </h2>
 
 
-<p>
-{aiSummary}
-</p>
+        <h3
+            style={{
+                color: "#333",
+                marginBottom: "20px"
+            }}
+        >
+            📊 Financial Summary for Administrator
+        </h3>
 
 
-</div>
+        {/* Statistics Cards */}
 
+        <div
+            style={{
+                display: "grid",
+                gridTemplateColumns:
+                    "repeat(auto-fit, minmax(200px, 1fr))",
+                gap: "15px",
+                marginBottom: "25px"
+            }}
+        >
+
+            {/* Total Users */}
+
+            <div
+                style={{
+                    padding: "18px",
+                    background: "#E3F2FD",
+                    borderRadius: "10px",
+                    textAlign: "center",
+                    border: "1px solid #90CAF9"
+                }}
+            >
+
+                <div
+                    style={{
+                        fontSize: "16px",
+                        fontWeight: "bold"
+                    }}
+                >
+                    👥 Total Users
+                </div>
+
+                <div
+                    style={{
+                        fontSize: "24px",
+                        fontWeight: "bold",
+                        marginTop: "8px"
+                    }}
+                >
+                    {stats.total_users}
+                </div>
+
+            </div>
+
+
+            {/* Total Admins */}
+
+            <div
+                style={{
+                    padding: "18px",
+                    background: "#E8F5E9",
+                    borderRadius: "10px",
+                    textAlign: "center",
+                    border: "1px solid #A5D6A7"
+                }}
+            >
+
+                <div
+                    style={{
+                        fontSize: "16px",
+                        fontWeight: "bold"
+                    }}
+                >
+                    👨‍💼 Total Admins
+                </div>
+
+                <div
+                    style={{
+                        fontSize: "24px",
+                        fontWeight: "bold",
+                        marginTop: "8px"
+                    }}
+                >
+                    {stats.total_admins}
+                </div>
+
+            </div>
+
+
+            {/* Total Income */}
+
+            <div
+                style={{
+                    padding: "18px",
+                    background: "#FFF3E0",
+                    borderRadius: "10px",
+                    textAlign: "center",
+                    border: "1px solid #FFCC80"
+                }}
+            >
+
+                <div
+                    style={{
+                        fontSize: "16px",
+                        fontWeight: "bold"
+                    }}
+                >
+                    💰 Total Income
+                </div>
+
+                <div
+                    style={{
+                        fontSize: "22px",
+                        fontWeight: "bold",
+                        marginTop: "8px"
+                    }}
+                >
+                    Rs. {stats.total_income}
+                </div>
+
+            </div>
+
+
+            {/* Total Expenses */}
+
+            <div
+                style={{
+                    padding: "18px",
+                    background: "#FFEBEE",
+                    borderRadius: "10px",
+                    textAlign: "center",
+                    border: "1px solid #EF9A9A"
+                }}
+            >
+
+                <div
+                    style={{
+                        fontSize: "16px",
+                        fontWeight: "bold"
+                    }}
+                >
+                    💸 Total Expenses
+                </div>
+
+                <div
+                    style={{
+                        fontSize: "22px",
+                        fontWeight: "bold",
+                        marginTop: "8px"
+                    }}
+                >
+                    Rs. {stats.total_expenses}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        {/* AI Analysis */}
+
+        <div
+            style={{
+                background: "#F3E5F5",
+                padding: "20px",
+                borderRadius: "10px",
+                borderLeft: "5px solid #6A1B9A",
+                marginBottom: "20px"
+            }}
+        >
+
+            <h3
+                style={{
+                    marginTop: "0",
+                    color: "#6A1B9A"
+                }}
+            >
+                🧠 AI Financial Analysis
+            </h3>
+
+            <p
+                style={{
+                    lineHeight: "1.7",
+                    whiteSpace: "pre-line",
+                    color: "#333",
+                    marginBottom: "0"
+                }}
+            >
+                {aiSummary}
+            </p>
+
+        </div>
+
+
+        {/* Download Button */}
+
+        <div
+            style={{
+                textAlign: "center",
+                marginTop: "20px"
+            }}
+        >
+
+            <button
+                onClick={downloadAISummary}
+                style={{
+                    backgroundColor: "#6A1B9A",
+                    color: "white",
+                    border: "none",
+                    padding: "12px 24px",
+                    borderRadius: "7px",
+                    cursor: "pointer",
+                    fontWeight: "bold",
+                    fontSize: "14px"
+                }}
+            >
+                📄 Download AI Summary
+            </button>
+
+        </div>
+
+    </div>
 }
+
 
                 <hr />
 
