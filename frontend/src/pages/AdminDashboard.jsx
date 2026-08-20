@@ -460,40 +460,39 @@ const generateAdminAI = async () => {
 
         const token = localStorage.getItem("token");
 
-
-        const response = await axios.get(
-            "http://127.0.0.1:5000/admin/ai-summary",
+        const response = await API.get(
+            "/admin/ai-summary",
             {
-                headers:{
-                    Authorization:`Bearer ${token}`
+                headers: {
+                    Authorization: `Bearer ${token}`
                 }
             }
         );
-
 
         setAiSummary(
             response.data.ai_summary
         );
 
+        toast.success(
+            "AI Admin Summary generated successfully."
+        );
 
-    }
-    catch(error){
+    } catch (error) {
 
-        console.log(error);
+        console.log("AI Summary Error:", error);
 
         toast.error(
+            error.response?.data?.message ||
             "Failed to generate AI summary."
         );
 
-    }
-    finally{
+    } finally {
 
         setAiLoading(false);
 
     }
 
 };
-
 
 
 const downloadPDF = () => {
