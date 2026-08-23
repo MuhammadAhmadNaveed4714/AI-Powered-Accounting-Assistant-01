@@ -14,6 +14,8 @@ export default defineConfig({
       '/admin': 'http://127.0.0.1:8080',
       '/ai': 'http://127.0.0.1:8080',
       '/documents': 'http://127.0.0.1:8080',
+      '/receipts': 'http://127.0.0.1:8080',
+      '/bills': 'http://127.0.0.1:8080',
       '/uploads': 'http://127.0.0.1:8080',
     },
   },
