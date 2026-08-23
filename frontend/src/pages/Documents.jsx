@@ -36,12 +36,12 @@ function Documents() {
         try {
 
             const response = await axios.post(
-                "http://127.0.0.1:8080/documents/upload",
+                "/documents/upload",
                 formData,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
-                        "Content-Type": "multipart/form-data"
+                        
                     }
                 }
             );
@@ -79,7 +79,7 @@ function Documents() {
             const token = localStorage.getItem("token");
 
             const response = await axios.get(
-                "http://127.0.0.1:8080/documents",
+                "/documents",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -113,7 +113,7 @@ function Documents() {
             const token = localStorage.getItem("token");
 
             const response = await axios.get(
-                "http://127.0.0.1:8080/receipts",
+                "/receipts",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -147,7 +147,7 @@ function Documents() {
             const token = localStorage.getItem("token");
 
             const response = await axios.get(
-                "http://127.0.0.1:8080/bills",
+                "/bills",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -436,7 +436,7 @@ function Documents() {
                                                 <button
                                                     onClick={() =>
                                                         window.open(
-                                                            `http://127.0.0.1:8080/uploads/${doc.file_name}`,
+                                                            `/uploads/${doc.file_name}`,
                                                             "_blank"
                                                         )
                                                     }
