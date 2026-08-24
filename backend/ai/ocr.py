@@ -8,16 +8,15 @@ def get_reader():
     global reader
 
     if reader is None:
-        print("========== OCR: START INITIALIZATION ==========", flush=True)
-
-        print("OCR: Creating EasyOCR Reader...", flush=True)
+        print("OCR: Initializing EasyOCR...", flush=True)
 
         reader = easyocr.Reader(
             ["en"],
-            gpu=False
+            gpu=False,
+            verbose=False
         )
 
-        print("OCR: EasyOCR Reader CREATED SUCCESSFULLY", flush=True)
+        print("OCR: EasyOCR initialized.", flush=True)
 
     return reader
 
@@ -29,26 +28,24 @@ def extract_text_from_image(image_path):
 
         reader = get_reader()
 
-        print("OCR: Reader ready, starting readtext...", flush=True)
+        print("OCR: Running OCR...", flush=True)
 
         result = reader.readtext(image_path)
 
-        print("OCR: readtext completed...", flush=True)
+        print("OCR: OCR completed.", flush=True)
 
         original_text = " ".join(
             [item[1] for item in result]
         )
 
-        print("\n===== ORIGINAL OCR =====\n")
-        print(original_text)
-
         cleaned_text = clean_ocr_text(original_text)
 
-        print("\n===== CLEANED OCR =====\n")
-        print(cleaned_text)
+        print("OCR: Text cleaned successfully.", flush=True)
 
         return original_text, cleaned_text
 
     except Exception as e:
-        print(f"\nOCR Error: {e}", flush=True)
+
+        print(f"OCR Error: {e}", flush=True)
+
         return "", ""

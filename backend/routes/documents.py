@@ -127,13 +127,6 @@ def upload_document():
     # Print OCR
     # =========================
 
-    print("\n========== ORIGINAL OCR ==========\n")
-    print(extracted_text)
-
-    print("\n========== CLEANED OCR ==========\n")
-    print(cleaned_text)
-
-    print("\n=================================\n")
 
 
     # =========================
