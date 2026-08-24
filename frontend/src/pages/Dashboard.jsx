@@ -32,6 +32,8 @@ import {
 
 function Dashboard() {
     
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const username = user.username || "User";
     const navigate = useNavigate();
     const [darkMode, setDarkMode] = useState(false);
     const [summary, setSummary] = useState({
@@ -423,6 +425,7 @@ useEffect(() => {
             <h1 className="center-heading">
     AI Accounting Dashboard
 </h1>
+<h2>Welcome {username}</h2>
 
 
 <div
