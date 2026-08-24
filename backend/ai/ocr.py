@@ -13,7 +13,7 @@ def get_reader():
         reader = easyocr.Reader(
             ["en"],
             gpu=False,
-            verbose=False
+            verbose=True
         )
 
         print("OCR: EasyOCR initialized.", flush=True)
