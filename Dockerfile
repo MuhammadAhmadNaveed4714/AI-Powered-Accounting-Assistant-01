@@ -34,6 +34,10 @@ COPY backend/requirements.txt .
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
+# Download EasyOCR models during Docker build
+RUN mkdir -p /app/easyocr_models && \
+    python -c "import easyocr; easyocr.Reader(['en'], gpu=False, model_storage_directory='/app/easyocr_models', verbose=True)"
+
 # Copy backend code
 COPY backend/ .
 
