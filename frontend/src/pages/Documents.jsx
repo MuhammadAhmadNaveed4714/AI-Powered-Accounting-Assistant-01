@@ -317,7 +317,7 @@ function Documents() {
 
                         <input
                             type="file"
-                            accept=".pdf,.jpg,.jpeg,.png"
+                            accept=".jpg,.jpeg,.png"
                             onChange={(e) =>
                                 setSelectedFile(
                                     e.target.files[0]

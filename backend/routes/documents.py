@@ -14,7 +14,6 @@ from db import (
     get_bills_by_user
 )
 
-from ai.pdf_reader import extract_text_from_pdf
 from ai.ocr import extract_text_from_image
 from ai.extractor import extract_document_data
 
@@ -22,9 +21,22 @@ from ai.extractor import extract_document_data
 documents_bp = Blueprint("documents", __name__)
 
 
+# =========================================================
+# Upload Configuration
+# =========================================================
+
 UPLOAD_FOLDER = "uploads"
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
+
+
+def allowed_file(filename):
+    return (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+    )
 
 
 # =========================================================
@@ -37,27 +49,30 @@ def upload_document():
 
     user_id = get_jwt_identity()
 
-
     # =========================
     # Check File
     # =========================
 
     if "file" not in request.files:
-
         return jsonify({
             "message": "No file selected"
         }), 400
-
 
     file = request.files["file"]
 
-
     if file.filename == "":
-
         return jsonify({
             "message": "No file selected"
         }), 400
 
+    # =========================
+    # Check File Type
+    # =========================
+
+    if not allowed_file(file.filename):
+        return jsonify({
+            "message": "Only JPG, JPEG and PNG images are supported"
+        }), 400
 
     # =========================
     # Get Document Type
@@ -65,69 +80,106 @@ def upload_document():
 
     document_type = request.form.get("document_type")
 
-
     if not document_type:
-
         return jsonify({
             "message": "Document type is required"
         }), 400
 
-
     document_type = document_type.lower().strip()
-
 
     # =========================
     # Only Bill and Receipt
     # =========================
 
     if document_type not in ["bill", "receipt"]:
-
         return jsonify({
             "message": "Only Bill and Receipt documents are supported"
         }), 400
 
-
     # =========================
-    # Save File
+    # Secure Filename
     # =========================
 
     filename = secure_filename(file.filename)
 
+    if not filename:
+        return jsonify({
+            "message": "Invalid filename"
+        }), 400
+
+    # =========================
+    # Create Unique Filename
+    # =========================
+
+    name, extension = os.path.splitext(filename)
+
+    filename = f"{user_id}_{name}{extension.lower()}"
 
     filepath = os.path.join(
         UPLOAD_FOLDER,
         filename
     )
 
-
-    file.save(filepath)
-
-
     # =========================
-    # OCR / PDF Extraction
+    # Save Image
     # =========================
 
-    extension = filename.lower().split(".")[-1]
+    try:
 
+        file.save(filepath)
 
-    if extension in ["jpg", "jpeg", "png"]:
+    except Exception as e:
+
+        print("File Save Error:", e, flush=True)
+
+        return jsonify({
+            "message": "Failed to save uploaded file",
+            "error": str(e)
+        }), 500
+
+    # =========================
+    # OCR Extraction
+    # =========================
+
+    try:
+
+        print(
+            f"OCR: Processing {filename}",
+            flush=True
+        )
 
         extracted_text, cleaned_text = extract_text_from_image(
             filepath
         )
 
-    else:
+        print(
+            "OCR: Image processing completed",
+            flush=True
+        )
 
-        extracted_text = extract_text_from_pdf(filepath)
+    except Exception as e:
 
-        cleaned_text = extracted_text
+        print(
+            "OCR Processing Error:",
+            e,
+            flush=True
+        )
 
+        return jsonify({
+            "message": "OCR processing failed",
+            "error": str(e)
+        }), 500
 
     # =========================
-    # Print OCR
+    # Check OCR Result
     # =========================
 
+    if not cleaned_text or not cleaned_text.strip():
 
+        return jsonify({
+            "message": "Could not extract text from the image",
+            "error": "OCR returned empty text"
+        }), 400
 
     # =========================
     # AI Extraction
@@ -142,18 +194,35 @@ def upload_document():
 
     except Exception as e:
 
-        print("AI Extraction Error:", e)
+        print(
+            "AI Extraction Error:",
+            e,
+            flush=True
+        )
 
         return jsonify({
             "message": "AI extraction failed",
             "error": str(e)
         }), 500
 
+    # =========================
+    # Print AI Result
+    # =========================
 
-    print("\n========== AI RESULT ==========\n")
-    print(ai_result)
-    print("\n===============================\n")
+    print(
+        "\n========== AI RESULT ==========\n",
+        flush=True
+    )
 
+    print(
+        ai_result,
+        flush=True
+    )
+
+    print(
+        "\n===============================\n",
+        flush=True
+    )
 
     # =========================
     # Convert AI JSON
@@ -177,83 +246,134 @@ def upload_document():
                 "ai_result": ai_result
             }), 500
 
+    # =========================
+    # Make Sure AI Result is Dict
+    # =========================
+
+    if not isinstance(ai_result, dict):
+
+        return jsonify({
+            "message": "AI returned an invalid response"
+        }), 500
 
     # =========================
     # Save Document
     # =========================
 
-    document_id = create_document(
+    try:
 
-        user_id,
+        document_id = create_document(
 
-        document_type,
+            user_id,
 
-        filename,
+            document_type,
 
-        filepath,
+            filename,
 
-        extracted_text,
+            filepath,
 
-        cleaned_text,
+            extracted_text,
 
-        json.dumps(ai_result)
+            cleaned_text,
 
-    )
+            json.dumps(ai_result)
 
+        )
 
-    # =====================================================
+    except Exception as e:
+
+        print(
+            "Database Document Error:",
+            e,
+            flush=True
+        )
+
+        return jsonify({
+            "message": "Failed to save document",
+            "error": str(e)
+        }), 500
+
+    # =========================================================
     # Save Receipt
-    # =====================================================
+    # =========================================================
 
     if document_type == "receipt":
 
-        create_receipt(
+        try:
 
-            user_id,
+            create_receipt(
 
-            document_id,
+                user_id,
 
-            ai_result.get("amount"),
+                document_id,
 
-            ai_result.get("receiver"),
+                ai_result.get("amount"),
 
-            ai_result.get("sender"),
+                ai_result.get("receiver"),
 
-            ai_result.get("transaction_id"),
+                ai_result.get("sender"),
 
-            ai_result.get("transaction_date")
+                ai_result.get("transaction_id"),
 
-        )
+                ai_result.get("transaction_date")
 
+            )
 
-    # =====================================================
+        except Exception as e:
+
+            print(
+                "Receipt Database Error:",
+                e,
+                flush=True
+            )
+
+            return jsonify({
+                "message": "Document saved but receipt data could not be saved",
+                "error": str(e)
+            }), 500
+
+    # =========================================================
     # Save Bill
-    # =====================================================
+    # =========================================================
 
     elif document_type == "bill":
 
-        create_bill(
+        try:
 
-            user_id,
+            create_bill(
 
-            document_id,
+                user_id,
 
-            ai_result.get("name"),
+                document_id,
 
-            ai_result.get("issue_date"),
+                ai_result.get("name"),
 
-            ai_result.get("bill_month"),
+                ai_result.get("issue_date"),
 
-            ai_result.get("due_date"),
+                ai_result.get("bill_month"),
 
-            ai_result.get("reference_no"),
+                ai_result.get("due_date"),
 
-            ai_result.get("payable_within_due_date"),
+                ai_result.get("reference_no"),
 
-            ai_result.get("payable_after_due_date")
+                ai_result.get("payable_within_due_date"),
 
-        )
+                ai_result.get("payable_after_due_date")
 
+            )
+
+        except Exception as e:
+
+            print(
+                "Bill Database Error:",
+                e,
+                flush=True
+            )
+
+            return jsonify({
+                "message": "Document saved but bill data could not be saved",
+                "error": str(e)
+            }), 500
 
     # =========================
     # Response
@@ -266,6 +386,8 @@ def upload_document():
         "document_id": document_id,
 
         "document_type": document_type,
+
+        "filename": filename,
 
         "ai_result": ai_result
 
@@ -282,13 +404,14 @@ def get_documents():
 
     user_id = get_jwt_identity()
 
-
     documents = get_documents_by_user(user_id)
-
 
     return jsonify(documents), 200
 
 
+# =========================================================
+# Get User Receipts
+# =========================================================
 
 @documents_bp.route("/receipts", methods=["GET"])
 @jwt_required()
@@ -301,6 +424,10 @@ def get_receipts():
     return jsonify(receipts), 200
 
 
+# =========================================================
+# Get User Bills
+# =========================================================
+
 @documents_bp.route("/bills", methods=["GET"])
 @jwt_required()
 def get_bills():
@@ -309,4 +436,4 @@ def get_bills():
 
     bills = get_bills_by_user(user_id)
 
-    return jsonify(bills), 200    
+    return jsonify(bills), 200
